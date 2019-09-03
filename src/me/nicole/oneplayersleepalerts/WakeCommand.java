@@ -44,6 +44,9 @@ public class WakeCommand implements CommandExecutor {
         if (target.isSleeping()) {
             //Wake
             target.wakeup(true);
+            
+            //Alerts the server
+            cs.getServer().broadcastMessage(String.format("%s%s has woken %s", ChatColor.LIGHT_PURPLE, cs.getName(), target.getName()));
         }
         
         return true;
