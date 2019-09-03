@@ -1,5 +1,9 @@
 main: me.nicole.oneplayersleepalerts.OnePlayerSleepAlerts
 name: OnePlayerSleepAlerts
-version: 0.1
+version: 0.2
 author: CyNicole
 description: Functionally the same as the famous OnePlayerSleep, but also sends a message in chat when entering the bed.
+commands:
+    wakeplayer:
+        description: Wakes a player out of bed by their name.
+        usage: /wakeplayer <player>

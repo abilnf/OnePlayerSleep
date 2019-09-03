@@ -6,11 +6,14 @@
 package me.nicole.oneplayersleepalerts;
 
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent.BedEnterResult;
+import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -35,23 +38,29 @@ public class SleepListener implements Listener {
     @EventHandler
     public void onPlayerSleep(final PlayerBedEnterEvent e) {
         //There's nothing to do if sleep fails
-        if (e.getBedEnterResult() != BedEnterResult.OK) return;                             
+        if (e.getBedEnterResult() != BedEnterResult.OK) return;
+        
+        //Create runnable and add to list
+        SleepRunnable sr = new SleepRunnable(e);
+        instance.addSleepTask(sr);
+        
+        //Create text event
+        TextComponent message = new TextComponent(String.format("%s%s has entered their bed. Click here to wake them.", ChatColor.LIGHT_PURPLE, e.getPlayer().getName()));
+        message.setClickEvent(new ClickEvent( ClickEvent.Action.RUN_COMMAND, String.format("/wakeplayer %s", e.getPlayer().getName())));
                
         //Message server immediately
-        e.getPlayer().getServer().broadcastMessage(String.format("%s%s has entered their bed.", ChatColor.LIGHT_PURPLE, e.getPlayer().getName()));
+        e.getPlayer().getServer().spigot().broadcast(message);
         
         //Sleep after a moment
-        Bukkit.getServer().getScheduler().runTaskLater((Plugin) this.instance, (Runnable) new Runnable() {
-           @Override
-           public void run() {
-               //Check to make sure the player is still in bed
-               if (!e.getPlayer().isSleeping()) return;
-               
-               //Skip time & weather
-               e.getPlayer().getWorld().setTime(0L);
-               e.getPlayer().getWorld().setStorm(false);
-               e.getPlayer().getWorld().setThundering(false);
-           }
-        }, 100L);
+        Bukkit.getServer().getScheduler().runTaskLater((Plugin) this.instance, sr, 100L);
+    }
+    
+    /**
+     * Wake Event
+     */
+    @EventHandler
+    public void onPlayerWake(final PlayerBedLeaveEvent e) {
+        //Cancel the player's sleep event
+        instance.cancelSleepTask(e.getPlayer());
     }
 }
